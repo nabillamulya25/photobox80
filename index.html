@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Photobox CFD</title>
+<style>
+body {background:black;color:white;text-align:center;font-family:Arial;}
+video {width:100%;max-width:400px;border-radius:10px;}
+button {padding:15px;font-size:18px;margin:10px;border-radius:10px;}
+canvas {display:none;}
+</style>
+</head>
+<body>
+
+<h2>Photobox CFD 80mm</h2>
+
+<video id="video" autoplay></video><br>
+<button onclick="startSession()">START FOTO</button>
+
+<canvas id="canvas"></canvas>
+
+<script>
+let video = document.getElementById("video");
+let canvas = document.getElementById("canvas");
+let ctx = canvas.getContext("2d");
+
+navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+.then(stream => { video.srcObject = stream; });
+
+function startSession(){
+alert("Siap foto 3x!");
+}
+</script>
+
+</body>
+</html>
