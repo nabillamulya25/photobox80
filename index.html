@@ -2,19 +2,51 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Photobox CFD</title>
+<title>Photobox CFD 80mm</title>
+
 <style>
-body {background:black;color:white;text-align:center;font-family:Arial;}
-video {width:100%;max-width:400px;border-radius:10px;}
-button {padding:15px;font-size:18px;margin:10px;border-radius:10px;}
-canvas {display:none;}
+body {
+  background:black;
+  color:white;
+  text-align:center;
+  font-family:Arial;
+}
+
+video {
+  width:100%;
+  max-width:400px;
+  border-radius:15px;
+}
+
+button {
+  padding:15px;
+  font-size:18px;
+  margin:10px;
+  border-radius:10px;
+  border:none;
+}
+
+#countdown {
+  font-size:40px;
+  margin:20px;
+  color:yellow;
+}
+
+canvas {
+  display:none;
+}
 </style>
 </head>
+
 <body>
 
-<h2>Photobox CFD 80mm</h2>
+<h2>Photobox CFD</h2>
 
-<video id="video" autoplay></video><br>
+<video id="video" autoplay></video>
+
+<div id="countdown"></div>
+
+<br>
 <button onclick="startSession()">START FOTO</button>
 
 <canvas id="canvas"></canvas>
@@ -23,12 +55,87 @@ canvas {display:none;}
 let video = document.getElementById("video");
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
+let countdownEl = document.getElementById("countdown");
+
+let photos = [];
+let photoCount = 0;
 
 navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
 .then(stream => { video.srcObject = stream; });
 
-function startSession(){
-alert("Siap foto 3x!");
+function startSession() {
+  photos = [];
+  photoCount = 0;
+  takePhoto();
+}
+
+function takePhoto() {
+  if(photoCount >= 3) {
+    createStrip();
+    return;
+  }
+
+  let count = 3;
+  countdownEl.innerHTML = count;
+
+  let timer = setInterval(() => {
+    count--;
+    countdownEl.innerHTML = count;
+
+    if(count <= 0) {
+      clearInterval(timer);
+      capture();
+    }
+  }, 1000);
+}
+
+function capture() {
+  let tempCanvas = document.createElement("canvas");
+  tempCanvas.width = video.videoWidth;
+  tempCanvas.height = video.videoHeight;
+  let tempCtx = tempCanvas.getContext("2d");
+  tempCtx.drawImage(video, 0, 0);
+
+  photos.push(tempCanvas);
+  photoCount++;
+  countdownEl.innerHTML = "📸";
+
+  setTimeout(() => {
+    takePhoto();
+  }, 1000);
+}
+
+function createStrip() {
+
+  const width = 576; // 80mm
+  const photoHeight = 400;
+  const spacing = 30;
+
+  canvas.width = width;
+  canvas.height = (photoHeight * 3) + (spacing * 4);
+
+  ctx.fillStyle = "white";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  let y = spacing;
+
+  photos.forEach(photo => {
+    ctx.drawImage(photo, 0, y, width, photoHeight);
+    y += photoHeight + spacing;
+  });
+
+  // convert to black white
+  let imgData = ctx.getImageData(0,0,canvas.width,canvas.height);
+  let data = imgData.data;
+
+  for(let i=0;i<data.length;i+=4){
+    let avg = (data[i] + data[i+1] + data[i+2]) / 3;
+    data[i] = data[i+1] = data[i+2] = avg;
+  }
+
+  ctx.putImageData(imgData,0,0);
+
+  countdownEl.innerHTML = "✅ Strip Siap!";
 }
 </script>
 
