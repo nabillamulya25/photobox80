@@ -46,9 +46,14 @@ canvas {
 <div id="countdown"></div>
 <br>
 <button onclick="startSession()">START FOTO</button>
-
+<button onclick="downloadStrip()">DOWNLOAD</button>
 <canvas id="canvas"></canvas>
-
+function downloadStrip(){
+  let link = document.createElement("a");
+  link.download = "photobox-strip.png";
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+}
 <script>
 
 let video = document.getElementById("video");
