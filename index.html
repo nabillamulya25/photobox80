@@ -27,9 +27,9 @@ button {
 }
 
 #countdown {
-  font-size:40px;
-  margin:20px;
+  font-size:50px;
   color:yellow;
+  margin:20px;
 }
 
 canvas {
@@ -42,100 +42,106 @@ canvas {
 
 <h2>Photobox CFD</h2>
 
-<video id="video" autoplay></video>
-
+<video id="video" autoplay playsinline></video>
 <div id="countdown"></div>
-
 <br>
 <button onclick="startSession()">START FOTO</button>
 
 <canvas id="canvas"></canvas>
 
 <script>
+
 let video = document.getElementById("video");
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
 let countdownEl = document.getElementById("countdown");
 
 let photos = [];
-let photoCount = 0;
+let photoIndex = 0;
 
-navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
-.then(stream => { video.srcObject = stream; });
+navigator.mediaDevices.getUserMedia({
+  video: { facingMode: "user" }
+})
+.then(stream => {
+  video.srcObject = stream;
+})
+.catch(err => {
+  alert("Camera tidak diizinkan!");
+});
 
 function startSession() {
   photos = [];
-  photoCount = 0;
+  photoIndex = 0;
   takePhoto();
 }
 
 function takePhoto() {
-  if(photoCount >= 3) {
+  if(photoIndex >= 3){
     createStrip();
     return;
   }
 
   let count = 3;
-  countdownEl.innerHTML = count;
+  countdownEl.innerText = count;
 
   let timer = setInterval(() => {
     count--;
-    countdownEl.innerHTML = count;
+    countdownEl.innerText = count;
 
-    if(count <= 0) {
+    if(count <= 0){
       clearInterval(timer);
       capture();
     }
-  }, 1000);
+  },1000);
 }
 
-function capture() {
+function capture(){
   let tempCanvas = document.createElement("canvas");
   tempCanvas.width = video.videoWidth;
   tempCanvas.height = video.videoHeight;
   let tempCtx = tempCanvas.getContext("2d");
-  tempCtx.drawImage(video, 0, 0);
+  tempCtx.drawImage(video,0,0);
 
   photos.push(tempCanvas);
-  photoCount++;
-  countdownEl.innerHTML = "📸";
+  photoIndex++;
+  countdownEl.innerText = "📸";
 
-  setTimeout(() => {
+  setTimeout(()=>{
     takePhoto();
-  }, 1000);
+  },1000);
 }
 
-function createStrip() {
+function createStrip(){
 
-  const width = 576; // 80mm
+  const width = 576;
   const photoHeight = 400;
   const spacing = 30;
 
   canvas.width = width;
-  canvas.height = (photoHeight * 3) + (spacing * 4);
+  canvas.height = (photoHeight*3)+(spacing*4);
 
-  ctx.fillStyle = "white";
+  ctx.fillStyle="white";
   ctx.fillRect(0,0,canvas.width,canvas.height);
 
   let y = spacing;
 
-  photos.forEach(photo => {
-    ctx.drawImage(photo, 0, y, width, photoHeight);
+  photos.forEach(photo=>{
+    ctx.drawImage(photo,0,y,width,photoHeight);
     y += photoHeight + spacing;
   });
 
-  // convert to black white
+  // convert black white
   let imgData = ctx.getImageData(0,0,canvas.width,canvas.height);
   let data = imgData.data;
 
   for(let i=0;i<data.length;i+=4){
-    let avg = (data[i] + data[i+1] + data[i+2]) / 3;
-    data[i] = data[i+1] = data[i+2] = avg;
+    let avg = (data[i]+data[i+1]+data[i+2])/3;
+    data[i]=data[i+1]=data[i+2]=avg;
   }
 
   ctx.putImageData(imgData,0,0);
 
-  countdownEl.innerHTML = "✅ Strip Siap!";
+  countdownEl.innerText="✅ Strip Jadi!";
 }
 </script>
 
